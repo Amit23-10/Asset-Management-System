@@ -1,4 +1,4 @@
-# Meal Management UI
+# Asset Management UI
 
 Next.js 16 App Router auth starter for Continental Works meal operations. Mirrors `workshop-builder-ui` authentication and API utilities. UI uses Tailwind CSS v4 + shadcn/ui.
 
