@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
       { headers: { 'Cache-Control': 'no-store' } },
     )
     response.cookies.set(COMPANY_COOKIE_NAME, '', { path: '/', maxAge: 0 })
+    if (process.env.NODE_ENV !== 'production' && cookieHeader.includes('sid=dev-session')) {
+      response.cookies.set('sid', '', { path: '/', maxAge: 0 })
+      return response
+    }
     forwardSetCookies(upstream, response)
     return response
   } catch (error) {

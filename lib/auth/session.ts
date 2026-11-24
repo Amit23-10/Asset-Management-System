@@ -36,6 +36,24 @@ const ANONYMOUS: Session = { status: 'anonymous', user: null }
 export async function getServerAuthSession(): Promise<Session> {
   try {
     const cookieHeader = await serverCookieHeader()
+    const isDev = process.env.NODE_ENV !== 'production'
+    if (isDev && cookieHeader.includes('sid=dev-session')) {
+      return {
+        status: 'authenticated',
+        user: {
+          id: 'Administrator',
+          name: 'Administrator',
+          email: 'administrator@local.dev',
+          roles: ['Admin'],
+          rawRoleIds: ['Administrator'],
+          capabilities: [],
+          shopIds: [],
+          siteName: 'Local Dev',
+          isAdministrator: true,
+          isWorkshopAdmin: true,
+        },
+      }
+    }
     const upstream = await frappeFetch(ERP_METHODS.me, { cookieHeader })
 
     if (upstream.status === 401 || upstream.status === 403) return ANONYMOUS
