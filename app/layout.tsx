@@ -13,10 +13,10 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Meal Management',
-    template: '%s · Meal Management',
+    default: 'Asset Management System',
+    template: '%s · Asset Management System',
   },
-  description: 'Continental Works meal operations workspace.',
+  description: 'Continental Works fixed asset management workspace.',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

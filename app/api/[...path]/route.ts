@@ -28,7 +28,7 @@ async function handler(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
     }
 
-    const targetPath = `/${path.join('/')}${request.nextUrl.search}`
+    const targetPath = `/api/${path.join('/')}${request.nextUrl.search}`
     if (!targetPath.startsWith('/api/') || targetPath.startsWith('/api/auth/') || targetPath.startsWith('/api/upload')) {
       return NextResponse.json({ error: 'Forbidden path' }, { status: 403 })
     }

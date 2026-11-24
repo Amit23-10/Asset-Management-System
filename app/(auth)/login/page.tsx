@@ -27,7 +27,7 @@ export default async function LoginPage({
         <div className="absolute inset-x-0 top-0 h-[3px] animate-pulse bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-400" />
         <CardHeader className="px-8 pt-9 pb-0">
           <div className="mb-6 flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-extrabold text-white shadow-lg">
-            MM
+            AM
           </div>
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-600">
             Continental Works
@@ -36,7 +36,7 @@ export default async function LoginPage({
             Welcome back
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Sign in to your meal management account
+            Sign in to your asset management account
           </p>
         </CardHeader>
 
@@ -46,7 +46,7 @@ export default async function LoginPage({
         </CardContent>
 
         <CardFooter className="justify-center border-t border-slate-100 bg-slate-50 px-8 py-4 text-xs font-medium tracking-wide text-slate-400 uppercase">
-          Meal Management Platform
+          Asset Management System
         </CardFooter>
       </Card>
     </main>

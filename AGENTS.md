@@ -1,13 +1,14 @@
 # AGENTS.md
 
-AI instructions for `meal-management-ui`. Read this before changing code.
+AI instructions for `asset-management-ui` (Fixed Asset Management). Read this before changing code.
 
 ## Project
 
-Next.js 16 App Router starter for Continental Works meal management. Current scope: authentication plus post-login dashboard. Feature modules are intentionally absent; add them incrementally.
+Next.js 16 App Router fixed-asset management UI backed by a Frappe/ERP site. Current scope: authentication, dashboard, Master, Configuration, Entry, Process modules and period-end/voucher workflows. Local preview uses the zero-dependency dev ERP (`npm run dev:erp`); production target is Frappe (Phase B).
 
-App root: `/home/ahr/WORKPLACE/meal-management-ui`
-Sibling Vite app: `/home/ahr/WORKPLACE/workshop-builder-ui`
+App root: this repository (`Asset-Management-System`)
+Build plan / screen specs / backend contract: `docs/04-fixed-asset-build-plan.md`
+UI mockups: `docs/mockups/`
 Implementation docs: `docs/01-meal-management-ui-auth.md`
 CRUD utility docs: `docs/02-meal-management-ui-crud-utils.md`
 App shell template docs: `docs/03-app-shell-template.md`
@@ -41,6 +42,7 @@ Run typecheck, lint, and build after changes. Fix all errors.
 - Tailwind CSS v4, CSS-first config in `app/globals.css`.
 - shadcn/ui base-nova, Base UI primitives, Lucide icons.
 - Zod for input validation.
+- `exceljs` for server-side Excel template generation and bulk import parsing only.
 - No MUI, Emotion, Redux, Zustand, or React Query unless requested.
 
 ## Auth architecture
@@ -85,6 +87,8 @@ app/api/auth/me/route.ts         session restore
 app/api/auth/logout/route.ts     logout exchange
 app/api/[...path]/route.ts       ERP BFF proxy
 app/api/upload/route.ts          upload_file proxy
+app/api/bulk-assets/template/route.ts Excel format download
+app/api/bulk-assets/import/route.ts   bulk Excel import endpoint
 lib/config.ts                    env, cookie/header names, ERP methods
 lib/types.ts                     DTO/session types
 lib/api/frappe.ts                server ERP fetch, cookie, CSRF, origin helpers
@@ -98,6 +102,16 @@ lib/api/server-crud.ts           server CRUD factory
 lib/auth/session.ts              getServerAuthSession, requireUser, requireRole
 lib/auth/roles.ts                role normalization/elevation
 lib/auth/guards.ts               API route guards
+lib/resources/masters.ts         master resource config (fields/columns/endpoints)
+lib/resources/master-api.ts      cached client CRUD factory for masters
+lib/format.ts                    dd-MM-yyyy display, cell text, current period helpers
+lib/resources/documents.ts       configuration/entry/process resource configs
+lib/resources/registry.ts        unified resource lookup (ALL_RESOURCES)
+lib/bulk-assets.ts               Excel template generation + strict import validation
+server/dev-erp.mjs               local dev ERP implementing asset.api.* contract
+components/features/*            data-table, resource-list, resource-form, resource-select, bulk-asset-actions, period-end, voucher-post, transfer-acknowledgements
+app/(app)/master/[resource]/*    master list/new/edit routes
+app/(app)/configuration/[resource]/*, app/(app)/entry/[resource]/*, app/(app)/process/[resource]/*  generated list/new/edit routes
 components/auth/*                session provider, login/logout UI
 components/ui/*                  shadcn components
 app/globals.css                  Tailwind + theme tokens

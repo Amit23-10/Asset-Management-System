@@ -1,8 +1,10 @@
 # Asset Management UI
 
-Next.js 16 App Router auth starter for Continental Works meal operations. Mirrors `workshop-builder-ui` authentication and API utilities. UI uses Tailwind CSS v4 + shadcn/ui.
+Next.js 16 App Router fixed-asset management system backed by a Frappe/ERP site. Mirrors `workshop-builder-ui` authentication and API utilities. UI uses Tailwind CSS v4 + shadcn/ui.
 
-Authentication plus a post-login dashboard are implemented. Sign-in lands on `/dashboard`; protected root redirects there. Add feature routes later.
+Authentication plus a post-login dashboard are implemented. Sign-in lands on `/dashboard`; protected root redirects there. Feature modules are added per the build plan.
+
+Build plan, screen specs, backend contract, roadmap and do/don't rules: `docs/04-fixed-asset-build-plan.md`. UI mockups: `docs/mockups/`.
 
 ## Setup
 

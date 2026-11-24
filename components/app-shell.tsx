@@ -126,13 +126,13 @@ export function AppShell({
           ) : (
             <>
               <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-[11px] font-extrabold text-white shadow-lg">
-                MM
+                AM
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Continental Works
                 </span>
-                <span className="block truncate text-sm font-bold text-white">Meal Management</span>
+                <span className="block truncate text-sm font-bold text-white">Asset Management System</span>
               </span>
               {mobile ? (
                 <Button
@@ -291,7 +291,7 @@ export function AppShell({
           <Menu className="size-5" />
         </Button>
         <Link href="/dashboard" className="ml-2 truncate text-sm font-bold">
-          Meal Management
+          Asset Management System
         </Link>
         <div className="ml-auto flex items-center">
           <ProfileMenu
@@ -356,7 +356,7 @@ export function AppShell({
         <div className="sticky top-14 z-30 flex h-12 items-center gap-3 border-b border-slate-200 bg-white/90 px-3 backdrop-blur sm:px-6 lg:top-0">
           <nav aria-label="Page context" className="flex min-w-0 items-center gap-2 text-xs">
             <span className="hidden font-semibold text-slate-500 sm:inline">
-              Meal Management
+              Asset Management System
             </span>
             <ChevronRight className="hidden size-3.5 text-slate-300 sm:block" />
             {activeGroup ? (
