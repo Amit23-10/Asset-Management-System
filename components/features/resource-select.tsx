@@ -8,6 +8,7 @@ import { listRows, type CrudListResult } from '@/lib/api/crud-shared'
 import { getMasterApi } from '@/lib/resources/master-api'
 import { type MasterField, type MasterRow } from '@/lib/resources/masters'
 import { getResource } from '@/lib/resources/registry'
+import { getMockRows, MOCK_DATA_MESSAGE } from '@/lib/mock-data'
 import {
   Select,
   SelectContent,
@@ -175,57 +176,80 @@ export function ResourceSelect({
   id?: string
 }) {
   const [options, setOptions] = useState<Option[]>(field.options ?? [])
-  const [failed, setFailed] = useState(false)
+  const [usingMock, setUsingMock] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     fetchOptions(field)
       .then((loaded) => {
-        if (!cancelled) setOptions(loaded)
+        if (!cancelled) {
+          setOptions(loaded)
+          setUsingMock(false)
+        }
       })
       .catch(() => {
-        if (!cancelled) setFailed(true)
+        if (cancelled) return
+        const rows = getMockRows(field.optionsResource ?? field.optionsEndpoint ?? '')
+        if (rows.length === 0) return
+        setOptions(
+          rows.map((row) => ({
+            value: String(row.id),
+            label: optionLabel(row, field.searchable),
+          })),
+        )
+        setUsingMock(true)
       })
     return () => {
       cancelled = true
     }
   }, [field])
 
-  const placeholder = failed ? 'Unavailable' : field.searchable ? 'Search asset ID or name' : 'Select'
+  const placeholder = field.searchable ? 'Search asset ID or name' : 'Select'
+  const mockHint = usingMock ? (
+    <span className="mt-1 block text-[10px] font-semibold tracking-wide text-amber-700" title={MOCK_DATA_MESSAGE}>
+      Mock options
+    </span>
+  ) : null
 
   if (field.searchable) {
     return (
-      <SearchableSelect
-        options={options}
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        invalid={invalid}
-        id={id}
-        placeholder={placeholder}
-      />
+      <div>
+        <SearchableSelect
+          options={options}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          invalid={invalid}
+          id={id}
+          placeholder={placeholder}
+        />
+        {mockHint}
+      </div>
     )
   }
 
   const items = Object.fromEntries(options.map((option) => [option.value, option.label]))
 
   return (
-    <Select
-      items={items}
-      value={value === '' ? null : value}
-      onValueChange={(next) => onChange(next === null ? '' : String(next))}
-      disabled={disabled}
-    >
-      <SelectTrigger id={id} aria-invalid={invalid} className="w-full">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div>
+      <Select
+        items={items}
+        value={value === '' ? null : value}
+        onValueChange={(next) => onChange(next === null ? '' : String(next))}
+        disabled={disabled}
+      >
+        <SelectTrigger id={id} aria-invalid={invalid} className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {mockHint}
+    </div>
   )
 }

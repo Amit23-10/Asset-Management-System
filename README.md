@@ -16,7 +16,7 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-Only env var: `ERP_BASE_URL` — ERP/Frappe site origin. Session cookie name fixed to `sid`.
+Only env var: `ERP_BASE_URL` — ERP/Frappe site origin. Session cookie name fixed to `sid`. All ERP access is server-side through same-origin `/api/...` routes; browser code never calls Frappe directly.
 
 ## Auth flow
 

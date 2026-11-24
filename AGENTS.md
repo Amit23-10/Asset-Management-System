@@ -4,7 +4,7 @@ AI instructions for `asset-management-ui` (Fixed Asset Management). Read this be
 
 ## Project
 
-Next.js 16 App Router fixed-asset management UI backed by a Frappe/ERP site. Current scope: authentication, dashboard, Master, Configuration, Entry, Process modules and period-end/voucher workflows. Local preview uses the zero-dependency dev ERP (`npm run dev:erp`); production target is Frappe (Phase B).
+Next.js 16 App Router fixed-asset management UI backed by a Frappe/ERP site. Current scope: authentication, dashboard, Master, Configuration, Entry, Process modules and period-end/voucher workflows. Backend integration is Frappe-only via `ERP_BASE_URL` and same-origin BFF routes.
 
 App root: this repository (`Asset-Management-System`)
 Build plan / screen specs / backend contract: `docs/04-fixed-asset-build-plan.md`
@@ -108,7 +108,6 @@ lib/format.ts                    dd-MM-yyyy display, cell text, current period h
 lib/resources/documents.ts       configuration/entry/process resource configs
 lib/resources/registry.ts        unified resource lookup (ALL_RESOURCES)
 lib/bulk-assets.ts               Excel template generation + strict import validation
-server/dev-erp.mjs               local dev ERP implementing asset.api.* contract
 components/features/*            data-table, resource-list, resource-form, resource-select, bulk-asset-actions, period-end, voucher-post, transfer-acknowledgements
 app/(app)/master/[resource]/*    master list/new/edit routes
 app/(app)/configuration/[resource]/*, app/(app)/entry/[resource]/*, app/(app)/process/[resource]/*  generated list/new/edit routes

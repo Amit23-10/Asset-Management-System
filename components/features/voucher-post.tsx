@@ -6,6 +6,8 @@ import { apiRequest } from '@/lib/api/client'
 import { listRows } from '@/lib/api/crud-shared'
 import { getMasterApi } from '@/lib/resources/master-api'
 import type { MasterRow } from '@/lib/resources/masters'
+import { getMockRows, MOCK_WRITE_MESSAGE } from '@/lib/mock-data'
+import { MockDataNotice } from '@/components/features/mock-data-notice'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,7 @@ export function VoucherPost() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [usingMock, setUsingMock] = useState(false)
   const [retry, setRetry] = useState(0)
 
   const load = useCallback(() => {
@@ -34,10 +37,18 @@ export function VoucherPost() {
     api
       .list({ page: 1, pageSize: 100 })
       .then((result) => {
-        if (!cancelled) setRows(listRows(result))
+        if (!cancelled) {
+          setRows(listRows(result))
+          setUsingMock(false)
+          setError(null)
+        }
       })
-      .catch((cause) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Failed to load vouchers')
+      .catch(() => {
+        if (!cancelled) {
+          setRows(getMockRows('vouchers'))
+          setUsingMock(true)
+          setError(null)
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -57,7 +68,10 @@ export function VoucherPost() {
         setNotice(`Voucher ${id} posted.`)
         setRetry((value) => value + 1)
       })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : 'Post failed'))
+      .catch(() => {
+        setNotice(MOCK_WRITE_MESSAGE)
+        setUsingMock(true)
+      })
       .finally(() => setBusyId(null))
   }
 
@@ -69,7 +83,10 @@ export function VoucherPost() {
         setNotice(`Posted ${posted.length} vouchers.`)
         setRetry((value) => value + 1)
       })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : 'Post failed'))
+      .catch(() => {
+        setNotice(MOCK_WRITE_MESSAGE)
+        setUsingMock(true)
+      })
       .finally(() => setBusyId(null))
   }
 
@@ -103,6 +120,7 @@ export function VoucherPost() {
           <AlertDescription>{notice}</AlertDescription>
         </Alert>
       ) : null}
+      {usingMock ? <MockDataNotice /> : null}
 
       <SectionCard title="Vouchers" description="Depreciation and disposal vouchers from processes." icon={FileCheck2}>
         <Table>

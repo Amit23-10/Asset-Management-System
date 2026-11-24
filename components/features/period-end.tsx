@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { CalendarClock, Play, Undo2 } from 'lucide-react'
 import { apiRequest } from '@/lib/api/client'
 import { currentPeriodLabel } from '@/lib/format'
+import { MOCK_PERIOD_RUNS, MOCK_WRITE_MESSAGE } from '@/lib/mock-data'
+import { MockDataNotice } from '@/components/features/mock-data-notice'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,16 +36,25 @@ export function PeriodEnd() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [usingMock, setUsingMock] = useState(false)
   const [retry, setRetry] = useState(0)
 
   const load = useCallback(() => {
     let cancelled = false
     apiRequest<{ data: PeriodRun[] }>('/api/method/asset.api.period_end.list', { silent: true })
       .then((result) => {
-        if (!cancelled) setRuns(result.data ?? [])
+        if (!cancelled) {
+          setRuns(result.data ?? [])
+          setUsingMock(false)
+          setError(null)
+        }
       })
-      .catch((cause) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Failed to load periods')
+      .catch(() => {
+        if (!cancelled) {
+          setRuns(MOCK_PERIOD_RUNS)
+          setUsingMock(true)
+          setError(null)
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -64,7 +75,10 @@ export function PeriodEnd() {
         setNotice(`Executed ${run.label}: ${run.entries} entries, total ${run.total}.`)
         setRetry((value) => value + 1)
       })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : 'Execution failed'))
+      .catch(() => {
+        setNotice(MOCK_WRITE_MESSAGE)
+        setUsingMock(true)
+      })
       .finally(() => setBusy(false))
   }
 
@@ -77,7 +91,10 @@ export function PeriodEnd() {
         setNotice(`Deleted last run ${run.label}.`)
         setRetry((value) => value + 1)
       })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : 'Delete failed'))
+      .catch(() => {
+        setNotice(MOCK_WRITE_MESSAGE)
+        setUsingMock(true)
+      })
       .finally(() => setBusy(false))
   }
 
@@ -104,6 +121,7 @@ export function PeriodEnd() {
           <AlertDescription>{notice}</AlertDescription>
         </Alert>
       ) : null}
+      {usingMock ? <MockDataNotice /> : null}
 
       <div className="flex flex-wrap gap-2">
         <Button disabled={busy || loading} onClick={execute}>

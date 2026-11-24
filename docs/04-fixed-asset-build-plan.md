@@ -1,7 +1,7 @@
 # Fixed Asset Module — Build Plan & Project Documentation
 
-Status: **FULL UI + DEV ERP COMPLETE (typecheck/lint/build green, end-to-end smoke-tested); production Frappe app pending**
-Last updated: 2026-11-23
+Status: **UI complete; Frappe-only integration (mock/dev ERP removed). Backend API implementation pending on Frappe site.**
+Last updated: 2026-11-24
 Owner: Amit23-10
 Companion rules: `AGENTS.md` (non-negotiables), `docs/01..03` (auth, CRUD, shell).
 
@@ -17,16 +17,14 @@ in, and the engineering do / don't rules.
 ## Run locally
 
 ```bash
+cp .env.example .env.local   # set ERP_BASE_URL=https://<your-frappe-site>
 npm install
-npm run dev:erp   # terminal 1 — zero-dependency dev ERP on port 4000
-npm run dev       # terminal 2 — UI on http://localhost:3000
+npm run dev
 ```
 
-Sign in with `Administrator / admin123` (Admin) or `accounts / accounts123` (Accounts).
-The dev ERP implements the `asset.api.*` contract in §5, seeds demo data, and
-persists mutations to `server/dev-erp-data.json` (gitignored; delete it to reseed).
-Production target remains the Frappe app (Phase B); no ERP credentials or tokens
-are read by browser code.
+Open `http://localhost:3000` and sign in with a valid Frappe user on the configured site.
+
+The UI is Frappe-only: all browser requests go to same-origin `/api/...` BFF routes, and the server forwards to `ERP_BASE_URL`. No mock/dev ERP is included. Backend endpoint contract and required schemas are documented in `docs/05-frappe-api-raise-request.md`.
 
 ---
 
@@ -396,7 +394,7 @@ Overhauling, Rate Change, Voucher Post.
 | --- | --- |
 | 2026-11-20 | Repo cloned; starter inventoried; 14 mockups OCR-extracted and copied to `docs/mockups/`; plan + specs + contract + roadmap written; README repurposed. |
 | 2026-11-20 | D1 resolved (no backend → Phase B). Phase 0 + 1 UI implemented: shared feature components, resource config, 7 master modules (list/new/edit), Master nav group, package/AGENTS repurposed. typecheck/lint/build green; prod smoke test: `/login` 200, protected `/master/departments` 307 → login. |
-| 2026-11-23 | Full UI implemented: generalized `ResourceForm`/`ResourceList`/page factory, 3 Configuration + 2 Entry + 5 Process resource modules (list/new/edit), custom Period End / Voucher Post / Transfer Acknowledgement screens, nav groups, dashboard asset stats, asset preview with book-value calculation. `server/dev-erp.mjs` dev ERP implements the full `asset.api.*` contract. Fixed BFF catch-all path prefix (`path` excludes `api/`) that made every `/api/method/*` call 403. typecheck/lint/build green; authenticated smoke tests: all pages 200, dashboard stats populated, period-end execute (4 entries), voucher post_all, transfer acknowledge, asset preview (cost 1000 − accDepn 200 = book value 800); demo data reseeded after tests. |
+| 2026-11-23 | Full UI implemented: generalized `ResourceForm`/`ResourceList`/page factory, 3 Configuration + 2 Entry + 5 Process resource modules (list/new/edit), custom Period End / Voucher Post / Transfer Acknowledgement screens, nav groups, dashboard asset stats, asset preview with book-value calculation. A local dev ERP was used for smoke testing during development (since removed); production target is Frappe via `ERP_BASE_URL`. |
 | 2026-11-23 | Follow-up fixes: replaced all visible "Meal Management" branding (shell, login, metadata, logo mark, lockfile) with "Asset Management System"; fixed list pages stuck on the loading spinner (mount-time search debounce re-set `loading=true` without refetch — now short-circuits when search is unchanged); select options now resolve from the unified resource registry so process forms can load assets. typecheck/lint/build green, served HTML and list API verified. |
 | 2026-11-23 | Create/edit pages across Master, Configuration, Entry and Process now span the full content width: removed `max-w-2xl`, fields render in a responsive 1/2/3-column card, section headings span all columns, actions stay page-aligned. typecheck/lint/build green; create and edit routes verified for all four groups. |
 | 2026-11-23 | Asset IDs now come from `autoid_config` (server-side): configurable segment sequence with company/branch/group/sub-group/department codes and a zero-padded serial derived from the highest previous ID for the same prefix. Added Company ID, ID Sequence and Separator config fields with defaults; asset entry previews the generated ID. Smoke test: `DF-0171-00001-00001-IT-0000000001/…0002`, different branch reset to `…0189-…0000000001`. typecheck/lint/build green; demo data reseeded. |
@@ -406,7 +404,7 @@ Overhauling, Rate Change, Voucher Post.
 | 2026-11-23 | Added Excel bulk entry to New/Opening Asset Entry lists. `Download Format` generates an `.xlsx` template with every form field, a hidden system signature, and strict header checks; `Upload Excel` accepts only that exact format (max 1000 rows/10 MB), validates required/type/length rules server-side, and creates assets via the ERP BFF. Added `exceljs` (server-only) as a dependency. Verified: template download, valid import created 1 asset, foreign workbook and tampered headers both rejected with 400. typecheck/lint/build green. |
 | 2026-11-23 | Removed the Asset ID column from the bulk Excel template; IDs remain auto-generated from AutoId configuration exactly as in single asset entry. |
 
-Next: Phase B (production Frappe backend), D2 roles, D3/D4 spec cross-checks with mockup PNGs. Dev ERP is for local preview only.
+Next: Phase B (production Frappe backend), D2 roles, D3/D4 spec cross-checks with mockup PNGs. API raise request: `docs/05-frappe-api-raise-request.md`.
 
 ## 10. Open decisions
 

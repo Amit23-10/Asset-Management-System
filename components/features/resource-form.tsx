@@ -11,6 +11,8 @@ import { getMasterApi } from '@/lib/resources/master-api'
 import { getResource } from '@/lib/resources/registry'
 import type { MasterField, MasterRow } from '@/lib/resources/masters'
 import { clearOptionsCache, ResourceSelect } from '@/components/features/resource-select'
+import { MockDataNotice } from '@/components/features/mock-data-notice'
+import { getMockRecord, MOCK_WRITE_MESSAGE } from '@/lib/mock-data'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -88,6 +90,7 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id?: st
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [serverError, setServerError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [usingMock, setUsingMock] = useState(false)
   const [loading, setLoading] = useState(Boolean(id))
   const [pending, startTransition] = useTransition()
 
@@ -101,9 +104,20 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id?: st
         const loaded = recordValues(fields, record)
         setValues(loaded)
         setBaseline(loaded)
+        setUsingMock(false)
       })
-      .catch((cause) => {
-        if (!cancelled) setServerError(cause instanceof Error ? cause.message : 'Failed to load record')
+      .catch(() => {
+        if (cancelled) return
+        const mockRecord = getMockRecord(resource.key, id)
+        if (mockRecord) {
+          const loaded = recordValues(fields, mockRecord)
+          setValues(loaded)
+          setBaseline(loaded)
+          setUsingMock(true)
+          setServerError(null)
+        } else {
+          setServerError('Failed to load record')
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -139,8 +153,9 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id?: st
             }
             return next
           })
+          setUsingMock(false)
         })
-        .catch(() => undefined)
+        .catch(() => setUsingMock(true))
     }, 400)
     return () => clearTimeout(timer)
   }, [values, resource, fields, loading])
@@ -183,7 +198,20 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id?: st
           return next
         })
       })
-      .catch(() => undefined)
+      .catch(() => {
+        const mockRecord = getMockRecord(source.key, value)
+        if (!mockRecord) return
+        setValues((current) => {
+          const next = { ...current }
+          for (const item of fields) {
+            if (!item.source) continue
+            const raw = mockRecord[item.source]
+            next[item.name] = raw === undefined || raw === null ? '' : String(raw)
+          }
+          return next
+        })
+        setUsingMock(true)
+      })
   }
 
   const submit = (mode: 'stay' | 'close') => {
@@ -213,14 +241,17 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id?: st
           setBaseline((current) => ({ ...current, id: String(created.id) }))
         }
         clearOptionsCache()
+        setUsingMock(false)
         if (mode === 'close') {
           router.push(resource.href)
         } else {
           setBaseline(values)
           setNotice('Saved.')
         }
-      } catch (cause) {
-        setServerError(cause instanceof Error ? cause.message : 'Save failed')
+      } catch {
+        setServerError(null)
+        setNotice(MOCK_WRITE_MESSAGE)
+        setUsingMock(true)
       }
     })
   }
@@ -256,6 +287,7 @@ export function ResourceForm({ resourceKey, id }: { resourceKey: string; id?: st
           <AlertDescription>{notice}</AlertDescription>
         </Alert>
       ) : null}
+      {usingMock ? <MockDataNotice /> : null}
 
       <form
         noValidate

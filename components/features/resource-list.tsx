@@ -10,6 +10,8 @@ import { getResource } from '@/lib/resources/registry'
 import type { MasterRow } from '@/lib/resources/masters'
 import { BulkAssetActions } from '@/components/features/bulk-asset-actions'
 import { DataTable } from '@/components/features/data-table'
+import { MockDataNotice } from '@/components/features/mock-data-notice'
+import { getMockRows } from '@/lib/mock-data'
 import { buttonVariants } from '@/components/ui/button'
 
 export function ResourceList({ resourceKey }: { resourceKey: string }) {
@@ -24,6 +26,7 @@ export function ResourceList({ resourceKey }: { resourceKey: string }) {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [usingMock, setUsingMock] = useState(false)
   const [retry, setRetry] = useState(0)
 
   useEffect(() => {
@@ -46,12 +49,32 @@ export function ResourceList({ resourceKey }: { resourceKey: string }) {
         if (cancelled) return
         setRows(listRows(result))
         setTotal(listTotal(result) ?? null)
+        setUsingMock(false)
+        setError(null)
       })
       .catch((cause) => {
         if (cancelled) return
-        setRows([])
-        setTotal(null)
-        setError(cause instanceof Error ? cause.message : 'Failed to load records')
+        const needle = search.trim().toLowerCase()
+        const mockRows = getMockRows(resource.key).filter((row) => {
+          const matchesFilters = Object.entries(resource.listParams ?? {}).every(
+            ([name, value]) => String(row[name]) === value,
+          )
+          const matchesSearch =
+            !needle || Object.values(row).some((value) => String(value).toLowerCase().includes(needle))
+          return matchesFilters && matchesSearch
+        })
+        if (mockRows.length > 0) {
+          const start = (page - 1) * pageSize
+          setRows(mockRows.slice(start, start + pageSize))
+          setTotal(mockRows.length)
+          setUsingMock(true)
+          setError(null)
+        } else {
+          setRows([])
+          setTotal(null)
+          setUsingMock(false)
+          setError(cause instanceof Error ? cause.message : 'Failed to load records')
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -94,6 +117,8 @@ export function ResourceList({ resourceKey }: { resourceKey: string }) {
           }}
         />
       ) : null}
+
+      {usingMock ? <MockDataNotice /> : null}
 
       <DataTable
         columns={resource.columns}

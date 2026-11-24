@@ -1,6 +1,8 @@
 import { Boxes, Building2, CircleUserRound, Coins, KeyRound, ShieldCheck, TrendingDown, Wallet } from 'lucide-react'
 import { SectionCard } from '@/components/section-card'
 import { StatCard } from '@/components/stat-card'
+import { MockDataNotice } from '@/components/features/mock-data-notice'
+import { MOCK_ASSET_STATS } from '@/lib/mock-data'
 import { Badge } from '@/components/ui/badge'
 import { serverFrappeRequest } from '@/lib/api/frappe'
 import { requireUser } from '@/lib/auth/session'
@@ -38,9 +40,11 @@ export default async function DashboardPage() {
   const user = await requireUser()
   const firstName = user.name.split(/\s+/)[0] || user.name
   const elevated = user.isAdministrator || user.isWorkshopAdmin
-  const stats = await serverFrappeRequest<AssetStats>('/api/method/asset.api.dashboard.stats').catch(
+  const liveStats = await serverFrappeRequest<AssetStats>('/api/method/asset.api.dashboard.stats').catch(
     () => null,
   )
+  const stats = liveStats ?? MOCK_ASSET_STATS
+  const usingMock = liveStats === null
 
   return (
     <div className="space-y-6">
@@ -88,41 +92,36 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {stats ? (
-        <div className="space-y-3">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Total Assets"
-              value={stats.assetCount}
-              hint={`${stats.activeCount} active · ${stats.disposedCount} disposed`}
-              icon={Boxes}
-            />
-            <StatCard
-              label="Total Cost"
-              value={money(stats.totalCost)}
-              hint={`${stats.monthAdditions} added this month`}
-              icon={Wallet}
-            />
-            <StatCard
-              label="Accumulated Depreciation"
-              value={money(stats.totalAccumulatedDepn)}
-              hint={`Last period: ${stats.lastPeriod}`}
-              icon={TrendingDown}
-            />
-            <StatCard
-              label="Book Value"
-              value={money(stats.totalBookValue)}
-              hint={`${stats.monthDisposals} disposals this month`}
-              icon={Coins}
-            />
-          </div>
+      {usingMock ? <MockDataNotice /> : null}
+
+      <div className="space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Total Assets"
+            value={stats.assetCount}
+            hint={`${stats.activeCount} active · ${stats.disposedCount} disposed`}
+            icon={Boxes}
+          />
+          <StatCard
+            label="Total Cost"
+            value={money(stats.totalCost)}
+            hint={`${stats.monthAdditions} added this month`}
+            icon={Wallet}
+          />
+          <StatCard
+            label="Accumulated Depreciation"
+            value={money(stats.totalAccumulatedDepn)}
+            hint={`Last period: ${stats.lastPeriod}`}
+            icon={TrendingDown}
+          />
+          <StatCard
+            label="Book Value"
+            value={money(stats.totalBookValue)}
+            hint={`${stats.monthDisposals} disposals this month`}
+            icon={Coins}
+          />
         </div>
-      ) : (
-        <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center">
-          <p className="text-sm font-medium text-slate-900">Asset statistics unavailable</p>
-          <p className="mt-1 text-xs text-slate-500">Start the dev ERP (npm run dev:erp) to populate asset data.</p>
-        </div>
-      )}
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <SectionCard

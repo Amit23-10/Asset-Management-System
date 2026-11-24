@@ -6,6 +6,8 @@ import { apiRequest } from '@/lib/api/client'
 import { listRows } from '@/lib/api/crud-shared'
 import { getMasterApi } from '@/lib/resources/master-api'
 import type { MasterRow } from '@/lib/resources/masters'
+import { getMockRows, MOCK_WRITE_MESSAGE } from '@/lib/mock-data'
+import { MockDataNotice } from '@/components/features/mock-data-notice'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { SectionCard } from '@/components/section-card'
@@ -26,6 +28,7 @@ export function TransferAcknowledgements() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [usingMock, setUsingMock] = useState(false)
   const [retry, setRetry] = useState(0)
 
   const load = useCallback(() => {
@@ -33,10 +36,18 @@ export function TransferAcknowledgements() {
     api
       .list({ status: 'Pending', page: 1, pageSize: 100 })
       .then((result) => {
-        if (!cancelled) setRows(listRows(result))
+        if (!cancelled) {
+          setRows(listRows(result))
+          setUsingMock(false)
+          setError(null)
+        }
       })
-      .catch((cause) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Failed to load transfers')
+      .catch(() => {
+        if (!cancelled) {
+          setRows(getMockRows('transfers'))
+          setUsingMock(true)
+          setError(null)
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -63,7 +74,10 @@ export function TransferAcknowledgements() {
         )
         setRetry((value) => value + 1)
       })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : 'Acknowledge failed'))
+      .catch(() => {
+        setNotice(MOCK_WRITE_MESSAGE)
+        setUsingMock(true)
+      })
       .finally(() => setBusyId(null))
   }
 
@@ -89,6 +103,7 @@ export function TransferAcknowledgements() {
           <AlertDescription>{notice}</AlertDescription>
         </Alert>
       ) : null}
+      {usingMock ? <MockDataNotice /> : null}
 
       <SectionCard title="Pending Transfers" description="Acknowledge to move the asset." icon={ClipboardCheck}>
         <Table>
